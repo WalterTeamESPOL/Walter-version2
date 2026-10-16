@@ -1,0 +1,119 @@
+<svg
+  id="walterFaceSvg"
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 1000 850"
+  preserveAspectRatio="xMidYMid meet"
+>
+  <defs>
+    <!-- Recortes para mantener las pupilas dentro de los ojos -->
+    <clipPath id="clipSadEyeL">
+      <path
+        d="M-92 -72
+           Q-20 -82 72 -122
+           Q116 -92 122 -18
+           Q128 82 72 137
+           Q16 188 -62 157
+           Q-132 128 -142 20
+           Q-148 -57 -92 -72 Z"
+      />
+    </clipPath>
+
+    <clipPath id="clipSadEyeR">
+      <path
+        d="M92 -72
+           Q20 -82 -72 -122
+           Q-116 -92 -122 -18
+           Q-128 82 -72 137
+           Q-16 188 62 157
+           Q132 128 142 20
+           Q148 -57 92 -72 Z"
+      />
+    </clipPath>
+  </defs>
+
+  <g id="face-sad">
+
+    <!-- OJO IZQUIERDO TRISTE -->
+    <g id="eyeSadL" transform="translate(300 420)">
+      <path
+        id="eyeSadBaseL"
+        d="M-92 -72
+           Q-20 -82 72 -122
+           Q116 -92 122 -18
+           Q128 82 72 137
+           Q16 188 -62 157
+           Q-132 128 -142 20
+           Q-148 -57 -92 -72 Z"
+        fill="#1de4ff"
+      />
+
+      <g id="pupilGroupSadL" clip-path="url(#clipSadEyeL)">
+        <ellipse
+          id="pupilSadL"
+          cx="38"
+          cy="-25"
+          rx="46"
+          ry="39"
+          fill="#ffffff"
+        />
+      </g>
+    </g>
+
+    <!-- OJO DERECHO TRISTE -->
+    <g id="eyeSadR" transform="translate(700 420)">
+      <path
+        id="eyeSadBaseR"
+        d="M92 -72
+           Q20 -82 -72 -122
+           Q-116 -92 -122 -18
+           Q-128 82 -72 137
+           Q-16 188 62 157
+           Q132 128 142 20
+           Q148 -57 92 -72 Z"
+        fill="#1de4ff"
+      />
+
+      <g id="pupilGroupSadR" clip-path="url(#clipSadEyeR)">
+        <ellipse
+          id="pupilSadR"
+          cx="-38"
+          cy="-25"
+          rx="46"
+          ry="39"
+          fill="#ffffff"
+        />
+      </g>
+    </g>
+
+    <!-- BOCAS TRISTES -->
+    <g id="sadMouthGroup">
+
+      <!-- BOCA TRISTE CERRADA -->
+      <path
+        id="mouthSad"
+        d="M380 635 Q500 545 620 635"
+        stroke="#1de4ff"
+        stroke-width="30"
+        fill="none"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+
+      <!-- BOCA TRISTE ABIERTA -->
+      <path
+        id="mouthSadOpen"
+        d="M390 680
+           C420 600 580 600 610 680
+           C625 722 580 765 500 765
+           C420 765 375 722 390 680 Z"
+        fill="#080808"
+        stroke="#1de4ff"
+        stroke-width="30"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        style="display: none;"
+      />
+    </g>
+
+  </g>
+</svg>

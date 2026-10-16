@@ -1,0 +1,52 @@
+<svg
+  id="walterEyes"
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 1000 850"
+  preserveAspectRatio="xMidYMid meet"
+>
+
+  <!-- Ojo izquierdo -->
+  <g id="eyeL" transform="translate(300 450)">
+    <g id="eyeLArt">
+      <ellipse
+        id="pupilL"
+        cx="0"
+        cy="0"
+        rx="115"
+        ry="125"
+        fill="#1de4ff"
+      />
+
+      <!-- Párpado / máscara para expresión feliz -->
+      <path
+        id="happyLidL"
+        d="M-130 15 Q0 95 130 15 L130 140 L-130 140 Z"
+        fill="#000000"
+        style="display: none;"
+      />
+    </g>
+  </g>
+
+  <!-- Ojo derecho -->
+  <g id="eyeR" transform="translate(700 450)">
+    <g id="eyeRArt">
+      <ellipse
+        id="pupilR"
+        cx="0"
+        cy="0"
+        rx="115"
+        ry="125"
+        fill="#1de4ff"
+      />
+
+      <!-- Párpado / máscara para expresión feliz -->
+      <path
+        id="happyLidR"
+        d="M-130 15 Q0 95 130 15 L130 140 L-130 140 Z"
+        fill="#000000"
+        style="display: none;"
+      />
+    </g>
+  </g>
+
+</svg>

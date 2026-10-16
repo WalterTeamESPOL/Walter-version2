@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Rostro Vectorizado — Display</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #f3f6fb;
+    }
+
+    svg {
+      width: 100vw;
+      height: 100vh;
+    }
+
+    svg * {
+      transform-origin: center;
+      transition: transform 220ms ease, opacity 220ms ease;
+    }
+
+    .mouth {
+      transition: d 180ms ease;
+    }
+
+    .eyelid{
+      transition: transform 140ms ease;
+    }
+
+    .pupil{
+      transition: transform 180ms cubic-bezier(.2,.9,.2,1);
+    }
+
+    .brow{
+      transition: transform 200ms cubic-bezier(.2,.9,.2,1);
+    }
+  </style>
+</head>
+<body>
+  <svg id="faceSVG" viewBox="0 0 200 200">
+    <!-- Ojos izquierdo -->
+    <g transform="translate(60,80)">
+      <ellipse cx="0" cy="0" rx="14" ry="10" fill="#fff" stroke="#333" stroke-width="1.5"/>
+      <circle class="pupil" id="pupilL" cx="0" cy="0" r="4" fill="#2b2b2b"/>
+      <rect class="eyelid" id="eyelidL" x="-14" y="-10" width="28" height="20" rx="10" ry="10" fill="#f3f6fb"/>
+    </g>
+
+    <!-- Ojos derecho -->
+    <g transform="translate(140,80)">
+      <ellipse cx="0" cy="0" rx="14" ry="10" fill="#fff" stroke="#333" stroke-width="1.5"/>
+      <circle class="pupil" id="pupilR" cx="0" cy="0" r="4" fill="#2b2b2b"/>
+      <rect class="eyelid" id="eyelidR" x="-14" y="-10" width="28" height="20" rx="10" ry="10" fill="#f3f6fb"/>
+    </g>
+
+    <!-- Cejas -->
+    <path id="browL" class="brow" d="M52 60 q18 -12 36 0" fill="none" stroke="#333" stroke-linecap="round" stroke-width="4"/>
+    <path id="browR" class="brow" d="M112 60 q18 -12 36 0" fill="none" stroke="#333" stroke-linecap="round" stroke-width="4"/>
+
+    <!-- Boca -->
+    <path id="mouth" class="mouth" d="M70 130 Q100 135 130 130" fill="none" stroke="#333" stroke-linecap="round" stroke-width="4"/>
+
+    <!-- Mejillas -->
+    <circle id="cheekL" cx="74" cy="126" r="0" fill="#d46a6a" opacity="0"/>
+    <circle id="cheekR" cx="126" cy="126" r="0" fill="#d46a6a" opacity="0"/>
+  </svg>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+
+    const mouth = document.getElementById('mouth');
+    const eyelidL = document.getElementById('eyelidL');
+    const eyelidR = document.getElementById('eyelidR');
+    const pupilL = document.getElementById('pupilL');
+    const pupilR = document.getElementById('pupilR');
+    const browL = document.getElementById('browL');
+    const browR = document.getElementById('browR');
+    const cheekL = document.getElementById('cheekL');
+    const cheekR = document.getElementById('cheekR');
+
+    let blinkTimeout = null;
+
+    socket.on('updateExpression', (data) => {
+      let exprName = data;
+      let intensity = 1.0;
+      if (typeof data === 'object' && data !== null) {
+        exprName = data.name || exprName;
+        intensity = typeof data.intensity === 'number' ? Math.max(0, Math.min(1, data.intensity)) : intensity;
+      }
+      applyExpression(exprName, intensity);
+    });
+
+    function applyExpression(name, intensity=1.0){
+      resetFace();
+      switch((name || '').toLowerCase()){
+        case 'neutral': setMouthNeutral(); break;
+        case 'smile': setMouthSmile(intensity); cheeks(true,intensity); browRelax(); break;
+        case 'bigsmile': setMouthBigSmile(intensity); cheeks(true,intensity); browRelax(); break;
+        case 'frown': setMouthFrown(intensity); browAngry(intensity); break;
+        case 'angry': setMouthFrown(intensity*0.8); browAngry(intensity); break;
+        case 'sad': setMouthSad(intensity); browSad(intensity); break;
+        case 'surprise': setMouthSurprise(intensity); browSurprise(intensity); break;
+        case 'blink': blink(); break;
+        case 'wink': wink('right'); break;
+        case 'wink-left': wink('left'); break;
+        default: setMouthNeutral();
+      }
+    }
+
+    function resetFace(){
+      pupilL.style.transform = pupilR.style.transform = 'translate(0,0)';
+      browL.style.transform = browR.style.transform = 'translate(0,0) rotate(0deg)';
+      eyelidL.style.transform = eyelidR.style.transform = 'translateY(-14px)';
+      cheekL.setAttribute('r',0); cheekR.setAttribute('r',0);
+      cheekL.style.opacity = cheekR.style.opacity = 0;
+    }
+
+    function setMouthNeutral(){ mouth.setAttribute('d','M70 130 Q100 135 130 130'); }
+    function setMouthSmile(i=1){ mouth.setAttribute('d',`M70 128 Q100 ${130-6*i} 130 128`); }
+    function setMouthBigSmile(i=1){ mouth.setAttribute('d',`M64 126 Q100 ${136-12*i} 136 126`); }
+    function setMouthFrown(i=1){ mouth.setAttribute('d',`M70 136 Q100 ${132+10*i} 130 136`); }
+    function setMouthSad(i=1){ mouth.setAttribute('d',`M74 136 Q100 ${134+8*i} 126 136`); }
+    function setMouthSurprise(i=1){ mouth.setAttribute('d','M95 124 Q100 138 105 124'); }
+
+    function blink(duration=120){ eyelidL.style.transform=eyelidR.style.transform='translateY(0px)'; clearTimeout(blinkTimeout); blinkTimeout=setTimeout(()=>{eyelidL.style.transform=eyelidR.style.transform='translateY(-14px)'},duration); }
+    function wink(which='right',duration=200){ if(which==='left'){eyelidL.style.transform='translateY(0px)'; setTimeout(()=>eyelidL.style.transform='translateY(-14px)',duration);} else {eyelidR.style.transform='translateY(0px)'; setTimeout(()=>eyelidR.style.transform='translateY(-14px)',duration);} }
+
+    function browRelax(){ browL.style.transform=browR.style.transform='translate(0,0) rotate(0deg)'; }
+    function browAngry(i=1){ browL.style.transform=`translate(0px,${-6*i}px) rotate(-12deg)`; browR.style.transform=`translate(0px,${-6*i}px) rotate(12deg)`; }
+    function browSad(i=1){ browL.style.transform=`translate(0px,${6*i}px) rotate(8deg)`; browR.style.transform=`translate(0px,${6*i}px) rotate(-8deg)`; }
+    function browSurprise(i=1){ browL.style.transform=`translate(0px,${-10*i}px)`; browR.style.transform=`translate(0px,${-10*i}px)`; }
+
+    function cheeks(show=false,i=1){ if(show){cheekL.setAttribute('r',8*i); cheekR.setAttribute('r',8*i); cheekL.style.opacity=cheekR.style.opacity=Math.min(0.9,0.6*i);} else {cheekL.setAttribute('r',0); cheekR.setAttribute('r',0); cheekL.style.opacity=cheekR.style.opacity=0;} }
+  </script>
+</body>
+</html>
+

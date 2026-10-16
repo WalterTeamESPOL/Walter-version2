@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Rostro Vectorizado — Display</title>
+  <style>
+    :root{
+      --bg: #f3f6fb;
+      --face: #ffe7c6;
+      --outline: #6b4f3b;
+      --eye: #2b2b2b;
+      --accent: #d46a6a;
+    }
+
+    html,body{
+      height:100%;
+      margin:0;
+      background: linear-gradient(180deg,var(--bg), #ffffff);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+
+    .stage{
+      width:420px;
+      max-width:92vw;
+      padding:12px;
+      text-align:center;
+      user-select:none;
+    }
+
+    h1{
+      font-size:1rem;
+      margin:6px 0 12px;
+      color:#333;
+    }
+
+    /* Suavizado para transformaciones */
+    svg *{
+      transform-origin: center;
+      transition: transform 220ms ease, opacity 220ms ease;
+    }
+
+    /* Transición suave para atributos que no aceptan transition (ej: d) */
+    .mouth {
+      transition: d 180ms ease;
+    }
+
+    /* Párpados: animamos su translateY para el blink */
+    .eyelid{
+      transition: transform 140ms ease;
+      transform-origin: center;
+    }
+
+    /* Pupilas se mueven con transform */
+    .pupil{
+      transition: transform 180ms cubic-bezier(.2,.9,.2,1);
+    }
+
+    /* Cejas */
+    .brow{
+      transition: transform 200ms cubic-bezier(.2,.9,.2,1);
+    }
+
+    /* Pequeña guía debajo */
+    .hint{
+      font-size:12px;
+      color:#666;
+      margin-top:10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <h1>Rostro vectorizado — Display</h1>
+
+    <!-- SVG rostro -->
+    <svg id="faceSVG" viewBox="0 0 200 220" width="100%" height="auto" role="img" aria-label="Rostro vectorizado">
+      <!-- Fondo cabeza -->
+      <defs>
+        <filter id="soft-shadow" x="-50%" y="-50%" width="200%" height="200%">
+          <feDropShadow dx="0" dy="6" stdDeviation="8" flood-opacity="0.12" flood-color="#000"/>
+        </filter>
+      </defs>
+
+      <g id="faceGroup" filter="url(#soft-shadow)">
+        <ellipse cx="100" cy="100" rx="70" ry="80" fill="var(--face)" stroke="var(--outline)" stroke-width="3"/>
+
+        <!-- Orejas -->
+        <ellipse cx="30" cy="100" rx="8" ry="14" fill="var(--face)" stroke="var(--outline)" stroke-width="2"/>
+        <ellipse cx="170" cy="100" rx="8" ry="14" fill="var(--face)" stroke="var(--outline)" stroke-width="2"/>
+
+        <!-- Ojos izquierdo -->
+        <g id="leftEye" transform="translate(-28,-6)">
+          <g transform="translate(98,86)">
+            <ellipse class="eye-white" cx="0" cy="0" rx="14" ry="10" fill="#fff" stroke="var(--outline)" stroke-width="1.5"/>
+            <circle class="pupil" id="pupilL" cx="0" cy="0" r="4" fill="var(--eye)"/>
+            <rect class="eyelid" id="eyelidL" x="-14" y="-10" width="28" height="20" rx="10" ry="10" fill="var(--face)"></rect>
+          </g>
+        </g>
+
+        <!-- Ojos derecho -->
+        <g id="rightEye" transform="translate(-4,-6)">
+          <g transform="translate(132,86)">
+            <ellipse class="eye-white" cx="0" cy="0" rx="14" ry="10" fill="#fff" stroke="var(--outline)" stroke-width="1.5"/>
+            <circle class="pupil" id="pupilR" cx="0" cy="0" r="4" fill="var(--eye)"/>
+            <rect class="eyelid" id="eyelidR" x="-14" y="-10" width="28" height="20" rx="10" ry="10" fill="var(--face)"></rect>
+          </g>
+        </g>
+
+        <!-- Cejas -->
+        <g id="brows">
+          <path id="browL" class="brow" d="M72 62 q18 -12 36 0" fill="none" stroke="var(--outline)" stroke-linecap="round" stroke-width="4"/>
+          <path id="browR" class="brow" d="M128 62 q18 -12 36 0" fill="none" stroke="var(--outline)" stroke-linecap="round" stroke-width="4" transform="translate(-56,0)"/>
+        </g>
+
+        <!-- Nariz simple -->
+        <path d="M100 94 q2 10 0 12 q-2 2 -4 0" fill="none" stroke="var(--outline)" stroke-linecap="round" stroke-width="2"/>
+
+        <!-- Boca (usamos 'd' para morphing) -->
+        <path id="mouth" class="mouth" d="M70 130 Q100 135 130 130" fill="none" stroke="var(--outline)" stroke-linecap="round" stroke-width="4"/>
+
+        <!-- Mejillas para emoción -->
+        <circle id="cheekL" cx="74" cy="126" r="0" fill="var(--accent)" opacity="0.0"/>
+        <circle id="cheekR" cx="126" cy="126" r="0" fill="var(--accent)" opacity="0.0"/>
+
+      </g>
+    </svg>
+
+    <div class="hint">Esperando ordenes del control... (conectado via Socket.IO)</div>
+  </div>
+
+  <!-- Socket.IO cliente (servido por el servidor) -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    // Conectar socket.io al mismo origen
+    const socket = io();
+
+    // Elementos del DOM (SVG)
+    const mouth = document.getElementById('mouth');
+    const eyelidL = document.getElementById('eyelidL');
+    const eyelidR = document.getElementById('eyelidR');
+    const pupilL = document.getElementById('pupilL');
+    const pupilR = document.getElementById('pupilR');
+    const browL = document.getElementById('browL');
+    const browR = document.getElementById('browR');
+    const cheekL = document.getElementById('cheekL');
+    const cheekR = document.getElementById('cheekR');
+    const hint = document.querySelector('.hint');
+
+    let blinkTimeout = null;
+
+    // Cuando llega una nueva expresión desde control.html
+    socket.on('updateExpression', (data) => {
+      // data puede ser un string o un objeto {name: "...", intensity: 0-1}
+      let exprName = data;
+      let intensity = 1.0;
+      if (typeof data === 'object' && data !== null) {
+        exprName = data.name || exprName;
+        intensity = typeof data.intensity === 'number' ? Math.max(0, Math.min(1, data.intensity)) : intensity;
+      }
+
+      // Mostrar en pantalla la expresión recibida (breve)
+      hint.textContent = `Expresión: ${exprName} ${intensity < 1 ? '('+intensity.toFixed(2)+')' : ''}`;
+
+      applyExpression(exprName, intensity);
+    });
+
+    // Mapeo de expresiones a transformaciones SVG
+    function applyExpression(name, intensity = 1.0){
+      // primero normalizamos: quitamos animaciones pendientes
+      resetFace();
+
+      switch((name || '').toLowerCase()){
+        case 'neutral':
+          setMouthNeutral();
+          break;
+        case 'smile':
+        case 'happy':
+          setMouthSmile(intensity);
+          cheeks(true, intensity);
+          browRelax();
+          break;
+        case 'bigsmile':
+        case 'laugh':
+          setMouthBigSmile(intensity);
+          cheeks(true, Math.min(1, intensity*1.2));
+          browRelax();
+          break;
+        case 'frown':
+        case 'angrymouth':
+          setMouthFrown(intensity);
+          browAngry(intensity);
+          break;
+        case 'angry':
+          setMouthFrown(intensity*0.8);
+          browAngry(intensity);
+          pupilsLookDown(intensity);
+          break;
+        case 'sad':
+          setMouthSad(intensity);
+          browSad(intensity);
+          pupilsLookDown(intensity*0.6);
+          break;
+        case 'surprise':
+        case 'wow':
+          setMouthSurprise(intensity);
+          openEyes(intensity);
+          browSurprise(intensity);
+          break;
+        case 'blink':
+          blink();
+          break;
+        case 'wink':
+          wink('right');
+          break;
+        case 'wink-left':
+        case 'winkleft':
+          wink('left');
+          break;
+        case 'look-left':
+          movePupils(-6 * intensity, 0);
+          break;
+        case 'look-right':
+          movePupils(6 * intensity, 0);
+          break;
+        case 'look-up':
+          movePupils(0, -4 * intensity);
+          break;
+        case 'look-down':
+          movePupils(0, 4 * intensity);
+          break;
+        default:
+          // si no conoce, pone neutral
+          setMouthNeutral();
+      }
+    }
+
+    // Reset básico (sin quitar transformaciones suaves)
+    function resetFace(){
+      // Pupilas al centro
+      pupilL.style.transform = 'translate(0px,0px)';
+      pupilR.style.transform = 'translate(0px,0px)';
+      // Cejas a posición por defecto
+      browL.style.transform = 'translate(0px,0px) rotate(0deg)';
+      browR.style.transform = 'translate(0px,0px) rotate(0deg)';
+      // Párpados abiertos (mover fuera)
+      eyelidL.style.transform = 'translateY(-14px)';
+      eyelidR.style.transform = 'translateY(-14px)';
+      // Mejillas invisibles
+      cheekL.setAttribute('r', 0);
+      cheekR.setAttribute('r', 0);
+      cheekL.style.opacity = 0;
+      cheekR.style.opacity = 0;
+    }
+
+    /* ----- Boca (morphing por 'd') ----- */
+    function setMouthNeutral(){
+      mouth.setAttribute('d', 'M70 130 Q100 135 130 130'); // ligeramente recta
+    }
+    function setMouthSmile(intensity=1){
+      const lift = 6 * intensity;
+      mouth.setAttribute('d', `M70 128 Q100 ${130 - lift} 130 128`);
+    }
+    function setMouthBigSmile(intensity=1){
+      const lift = 12 * intensity;
+      mouth.setAttribute('d', `M64 126 Q100 ${136 - lift} 136 126`);
+    }
+    function setMouthFrown(intensity=1){
+      const lift = 10 * intensity;
+      mouth.setAttribute('d', `M70 136 Q100 ${132 + lift} 130 136`);
+    }
+    function setMouthSad(intensity=1){
+      const lift = 8 * intensity;
+      mouth.setAttribute('d', `M74 136 Q100 ${134 + lift} 126 136`);
+    }
+    function setMouthSurprise(intensity=1){
+      // convertimos la boca en un óvalo pequeño (sorpresa)
+      mouth.setAttribute('d', `M95 124 Q100 138 105 124`);
+    }
+
+    /* ----- Ojos / Pupilas ----- */
+    function movePupils(x=0,y=0){
+      pupilL.style.transform = `translate(${x}px, ${y}px)`;
+      pupilR.style.transform = `translate(${x}px, ${y}px)`;
+    }
+    function pupilsLookDown(intensity=1){
+      movePupils(0, 3 * intensity);
+    }
+    function openEyes(intensity=1){
+      // aseguramos párpados subidos
+      eyelidL.style.transform = 'translateY(-18px)';
+      eyelidR.style.transform = 'translateY(-18px)';
+    }
+
+    /* ----- Párpados: blink/wink ----- */
+    function blink(duration = 120){
+      // animación: bajar párpados y subir
+      eyelidL.style.transform = 'translateY(0px)';
+      eyelidR.style.transform = 'translateY(0px)';
+      clearTimeout(blinkTimeout);
+      blinkTimeout = setTimeout(() => {
+        eyelidL.style.transform = 'translateY(-14px)';
+        eyelidR.style.transform = 'translateY(-14px)';
+      }, duration);
+    }
+
+    function wink(which='right', duration=200){
+      if(which === 'left'){
+        eyelidL.style.transform = 'translateY(0px)';
+        setTimeout(()=> eyelidL.style.transform = 'translateY(-14px)', duration);
+      }else{
+        eyelidR.style.transform = 'translateY(0px)';
+        setTimeout(()=> eyelidR.style.transform = 'translateY(-14px)', duration);
+      }
+    }
+
+    /* ----- Cejas ----- */
+    function browRelax(){
+      browL.style.transform = 'translate(0px,0px) rotate(0deg)';
+      browR.style.transform = 'translate(0px,0px) rotate(0deg)';
+    }
+    function browAngry(intensity=1){
+      const y = -6 * intensity;
+      // rotar e inclinar hacia abajo en el centro
+      browL.style.transform = `translate(0px, ${y}px) rotate(-12deg)`;
+      browR.style.transform = `translate(0px, ${y}px) rotate(12deg)`;
+    }
+    function browSad(intensity=1){
+      const y = 6 * intensity;
+      browL.style.transform = `translate(0px, ${y}px) rotate(8deg)`;
+      browR.style.transform = `translate(0px, ${y}px) rotate(-8deg)`;
+    }
+    function browSurprise(intensity=1){
+      const y = -10 * intensity;
+      browL.style.transform = `translate(0px, ${y}px) rotate(0deg)`;
+      browR.style.transform = `translate(0px, ${y}px) rotate(0deg)`;
+    }
+
+    /* ----- Mejillas ----- */
+    function cheeks(show=false, intensity=1){
+      if(show){
+        cheekL.setAttribute('r', 8 * intensity);
+        cheekR.setAttribute('r', 8 * intensity);
+        cheekL.style.opacity = Math.min(0.9, 0.6 * intensity);
+        cheekR.style.opacity = Math.min(0.9, 0.6 * intensity);
+      } else {
+        cheekL.setAttribute('r', 0);
+        cheekR.setAttribute('r', 0);
+        cheekL.style.opacity = 0;
+        cheekR.style.opacity = 0;
+      }
+    }
+
+    /* ----- Inicialización: abrir párpados (fuera de la cara) ----- */
+    (function init(){
+      // colocamos párpados fuera para simular ojos abiertos
+      eyelidL.style.transform = 'translateY(-14px)';
+      eyelidR.style.transform = 'translateY(-14px)';
+      setMouthNeutral();
+
+      // Mostrar info de conexión
+      socket.on('connect', () => {
+        hint.textContent = `Conectado como ${socket.id} — esperando órdenes`;
+      });
+      socket.on('disconnect', () => {
+        hint.textContent = `Desconectado — esperando reconexión`;
+      });
+    })();
+
+    // Para prueba local sin control: escucha teclas numéricas
+    // 1 neutral, 2 smile, 3 bigsmile, 4 frown, 5 surprise, 6 blink, 7 wink
+    window.addEventListener('keydown', (e) => {
+      if(['1','2','3','4','5','6','7'].includes(e.key)){
+        const map = {
+          '1':'neutral','2':'smile','3':'bigsmile','4':'frown','5':'surprise','6':'blink','7':'wink'
+        };
+        applyExpression(map[e.key], 1.0);
+      }
+    });
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,142 @@
+<svg
+  id="walterAngryFaceSvg"
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 1000 850"
+  preserveAspectRatio="xMidYMid meet"
+>
+  <!-- Fondo negro solo para previsualizar -->
+  <rect
+    id="angryBackground"
+    x="0"
+    y="0"
+    width="1000"
+    height="850"
+    fill="#000000"
+  />
+
+  <defs>
+    <!-- Recorte del ojo izquierdo enojado -->
+    <clipPath id="clipAngryEyeL">
+      <path
+        d="M-135 -125
+           Q-40 -35 125 -5
+           Q115 95 40 135
+           Q-55 160 -110 75
+           Q-135 30 -135 -125
+           Z"
+      />
+    </clipPath>
+
+    <!-- Recorte del ojo derecho enojado -->
+    <clipPath id="clipAngryEyeR">
+      <path
+        d="M135 -125
+           Q40 -35 -125 -5
+           Q-115 95 -40 135
+           Q55 160 110 75
+           Q135 30 135 -125
+           Z"
+      />
+    </clipPath>
+  </defs>
+
+  <g id="faceAngry">
+
+    <!-- OJO IZQUIERDO ENOJADO -->
+    <g
+      id="eyeAngryL"
+      transform="translate(300 410)"
+    >
+      <path
+        id="eyeAngryBaseL"
+        d="M-135 -125
+           Q-40 -35 125 -5
+           Q115 95 40 135
+           Q-55 160 -110 75
+           Q-135 30 -135 -125
+           Z"
+        fill="#ff1a1a"
+      />
+
+      <!-- Pupila izquierda -->
+      <g
+        id="pupilGroupAngryL"
+        clip-path="url(#clipAngryEyeL)"
+      >
+        <ellipse
+          id="pupilAngryL"
+          cx="42"
+          cy="20"
+          rx="42"
+          ry="36"
+          fill="#ffffff"
+        />
+      </g>
+    </g>
+
+    <!-- OJO DERECHO ENOJADO -->
+    <g
+      id="eyeAngryR"
+      transform="translate(700 410)"
+    >
+      <path
+        id="eyeAngryBaseR"
+        d="M135 -125
+           Q40 -35 -125 -5
+           Q-115 95 -40 135
+           Q55 160 110 75
+           Q135 30 135 -125
+           Z"
+        fill="#ff1a1a"
+      />
+
+      <!-- Pupila derecha -->
+      <g
+        id="pupilGroupAngryR"
+        clip-path="url(#clipAngryEyeR)"
+      >
+        <ellipse
+          id="pupilAngryR"
+          cx="-42"
+          cy="20"
+          rx="42"
+          ry="36"
+          fill="#ffffff"
+        />
+      </g>
+    </g>
+
+    <!-- BOCAS ENOJADAS -->
+    <g id="angryMouthGroup">
+
+      <!-- Boca enojada cerrada -->
+      <path
+        id="mouthAngry"
+        d="M380 635 Q500 545 620 635"
+        stroke="#ff1a1a"
+        stroke-width="30"
+        fill="none"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+
+      <!-- Boca enojada abierta -->
+      <path
+        id="mouthAngryOpen"
+        d="M390 680
+           C420 600 580 600 610 680
+           C625 722 580 765 500 765
+           C420 765 375 722 390 680
+           Z"
+        fill="#080808"
+        stroke="#ff1a1a"
+        stroke-width="30"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        style="display: none;"
+      />
+
+    </g>
+
+  </g>
+</svg>

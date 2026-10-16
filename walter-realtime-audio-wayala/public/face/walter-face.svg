@@ -1,0 +1,296 @@
+<svg
+  id="walterFaceSvg"
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 1000 850"
+  preserveAspectRatio="xMidYMid meet"
+>
+  <defs>
+    <!-- Recortes de los ojos normales -->
+    <clipPath id="clipEyeL">
+      <ellipse
+        id="eyeClipL"
+        cx="0"
+        cy="0"
+        rx="115"
+        ry="125"
+      />
+    </clipPath>
+
+    <clipPath id="clipEyeR">
+      <ellipse
+        id="eyeClipR"
+        cx="0"
+        cy="0"
+        rx="115"
+        ry="125"
+      />
+    </clipPath>
+
+    <!-- Recortes de los ojos enojados -->
+    <clipPath id="clipAngryEyeL">
+      <path
+        d="M-135 -125
+           Q-40 -35 125 -5
+           Q115 95 40 135
+           Q-55 160 -110 75
+           Q-135 30 -135 -125
+           Z"
+      />
+    </clipPath>
+
+    <clipPath id="clipAngryEyeR">
+      <path
+        d="M135 -125
+           Q40 -35 -125 -5
+           Q-115 95 -40 135
+           Q55 160 110 75
+           Q135 30 135 -125
+           Z"
+      />
+    </clipPath>
+  </defs>
+
+  <g id="walterVector">
+
+    <!-- ================================================== -->
+    <!-- OJO IZQUIERDO                                      -->
+    <!-- Todas las variantes permanecen dentro de eyeL      -->
+    <!-- ================================================== -->
+    <g
+      id="eyeL"
+      class="eye"
+      transform="translate(300 450)"
+    >
+      <!-- Ojo normal -->
+      <ellipse
+        id="eyeBaseL"
+        cx="0"
+        cy="0"
+        rx="115"
+        ry="125"
+        fill="#1de4ff"
+      />
+
+      <!-- Ojo enojado -->
+      <path
+        id="angryEyeBaseL"
+        d="M-135 -165
+           Q-40 -75 125 -45
+           Q115 55 40 95
+           Q-55 120 -110 35
+           Q-135 -10 -135 -165
+           Z"
+        fill="#ff1a1a"
+        style="display: none;"
+      />
+
+      <!--
+        Se reutiliza la misma pupila.
+        El JS cambiará el clip-path entre clipEyeL y clipAngryEyeL.
+      -->
+      <g
+        id="pupilGroupL"
+        clip-path="url(#clipEyeL)"
+      >
+        <ellipse
+          id="pupilL"
+          cx="55"
+          cy="-45"
+          rx="40"
+          ry="35"
+          fill="#ffffff"
+        />
+      </g>
+
+      <!-- Párpado feliz -->
+      <path
+        id="happyLidL"
+        d="M-130 25
+           Q0 105 130 25
+           L130 140
+           L-130 140
+           Z"
+        fill="#000000"
+        style="display: none;"
+      />
+
+      <!-- Párpado triste -->
+      <path
+        id="sadLidL"
+        d="M-140 -150
+           L140 -150
+           L140 -85
+           Q0 -55 -140 -20
+           Z"
+        fill="#000000"
+        style="display: none;"
+      />
+    </g>
+
+    <!-- ================================================== -->
+    <!-- OJO DERECHO                                        -->
+    <!-- Todas las variantes permanecen dentro de eyeR      -->
+    <!-- ================================================== -->
+    <g
+      id="eyeR"
+      class="eye"
+      transform="translate(700 450)"
+    >
+      <!-- Ojo normal -->
+      <ellipse
+        id="eyeBaseR"
+        cx="0"
+        cy="0"
+        rx="115"
+        ry="125"
+        fill="#1de4ff"
+      />
+
+      <!-- Ojo enojado -->
+      <path
+        id="angryEyeBaseR"
+        d="M135 -165
+           Q40 -75 -125 -45
+           Q-115 55 -40 95
+           Q55 120 110 35
+           Q135 -10 135 -165
+           Z"
+        fill="#ff1a1a"
+        style="display: none;"
+      />
+
+      <!--
+        Se reutiliza la misma pupila.
+        El JS cambiará el clip-path entre clipEyeR y clipAngryEyeR.
+      -->
+      <g
+        id="pupilGroupR"
+        clip-path="url(#clipEyeR)"
+      >
+        <ellipse
+          id="pupilR"
+          cx="55"
+          cy="-45"
+          rx="40"
+          ry="35"
+          fill="#ffffff"
+        />
+      </g>
+
+      <!-- Párpado feliz -->
+      <path
+        id="happyLidR"
+        d="M-130 25
+           Q0 105 130 25
+           L130 140
+           L-130 140
+           Z"
+        fill="#000000"
+        style="display: none;"
+      />
+
+      <!-- Párpado triste -->
+      <path
+        id="sadLidR"
+        d="M-140 -150
+           L140 -150
+           L140 -20
+           Q0 -55 -140 -85
+           Z"
+        fill="#000000"
+        style="display: none;"
+      />
+    </g>
+
+    <!-- ================================================== -->
+    <!-- BOCA                                               -->
+    <!-- Todas las variantes permanecen en mouthGroup       -->
+    <!-- ================================================== -->
+    <g id="mouthGroup">
+
+      <!-- Boca normal cerrada -->
+      <path
+        id="mouthClosed"
+        d="M380 615 Q500 665 620 615"
+        stroke="#1de4ff"
+        stroke-width="30"
+        fill="none"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+
+      <!-- Boca normal abierta -->
+      <path
+        id="mouthOpen"
+        d="M390 630
+           C440 655 560 655 610 630
+           C625 622 635 638 625 650
+           C570 710 430 710 375 650
+           C365 638 375 622 390 630
+           Z"
+        stroke="#1de4ff"
+        stroke-width="30"
+        fill="none"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        style="display: none;"
+      />
+
+      <!-- Boca triste cerrada -->
+      <path
+        id="mouthSad"
+        d="M380 655 Q500 550 620 655"
+        stroke="#1de4ff"
+        stroke-width="30"
+        fill="none"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        style="display: none;"
+      />
+
+      <!-- Boca triste abierta -->
+      <path
+        id="mouthSadOpen"
+        d="M380 635
+          Q500 545 620 635
+          Q585 710 500 712
+          Q415 710 380 635 Z"
+        fill="#080808"
+        stroke="#1de4ff"
+        stroke-width="18"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        style="display: none;"
+      />
+
+      <!-- Boca enojada cerrada -->
+      <path
+        id="mouthAngry"
+        d="M380 635 Q500 545 620 635"
+        stroke="#ff1a1a"
+        stroke-width="30"
+        fill="none"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        style= "display: none"
+      />
+
+      <!-- Boca enojada abierta -->
+      <path
+        id="mouthAngryOpen"
+        d="M380 635
+          Q500 545 620 635
+          Q585 710 500 712
+          Q415 710 380 635 Z"
+        fill="#080808"
+        stroke="#ff1a1a"
+        stroke-width="18"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        style="display: none;"
+      />
+
+    </g>
+
+  </g>
+</svg>

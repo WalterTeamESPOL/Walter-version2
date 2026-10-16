@@ -1,0 +1,35 @@
+<svg
+  id="walterMouthSvg"
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 1000 850"
+  preserveAspectRatio="xMidYMid meet"
+>
+
+  <g id="mouthGroup">
+
+    <!-- Boca cerrada / sonrisa normal -->
+    <path
+      id="mouthClosed"
+      d="M380 615 Q500 665 620 615"
+      stroke="#1de4ff"
+      stroke-width="30"
+      fill="none"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <!-- Boca abierta / hablando, estilo antiguo -->
+    <path
+      id="mouthOpen"
+      d="M390 630 C440 655 560 655 610 630 C625 622 635 638 625 650 C570 710 430 710 375 650 C365 638 375 622 390 630 Z"
+      stroke="#1de4ff"
+      stroke-width="30"
+      fill="none"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      style="display: none;"
+    />
+
+  </g>
+
+</svg>

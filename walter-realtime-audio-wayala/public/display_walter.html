@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Display Walter</title>
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100%;
+      background: #000000;
+    }
+
+    body {
+      display: block;
+      font-family: Arial, sans-serif;
+    }
+
+    #container {
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    #rostro {
+      width: 100vw;
+      height: 100vh;
+    }
+
+    #walterFace {
+      width: 100vw;
+      height: 100vh;
+      display: block;
+    }
+
+    svg * {
+      transform-origin: center;
+      transition: transform 250ms ease, opacity 250ms ease, d 250ms ease;
+    }
+
+    .pupil {
+      transition: transform 180ms cubic-bezier(.2,.9,.2,1);
+    }
+
+    .brow {
+      transition: transform 200ms cubic-bezier(.2,.9,.2,1);
+    }
+
+    .eye {
+      transition: transform 200ms cubic-bezier(.2,.9,.2,1);
+    }
+
+    #panelVoz {
+      color: white;
+      padding: 20px;
+    }
+
+    #panelVoz h2 {
+      margin-top: 0;
+    }
+
+    #panelVoz input,
+    #panelVoz select,
+    #panelVoz button,
+    #panelVoz label {
+      margin: 5px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="container">
+
+    <div id="rostro">
+      <svg id="walterFace" viewBox="0 250 1000 490" preserveAspectRatio="xMidYMid meet"> <!-- el view box para la posicion del rosotros el segundo posicion vertical y el ultimo el tañano del rsotros (osea que tangrande se va a presentar)-->
+
+        <!-- Cejas tipo LED -->
+        <rect id="browL" class="brow" x="180" y="250"vwidth="160" height="40" rx="25" fill="transparent"/>
+
+        <rect id="browR" class="brow" x="660" y="250" width="160" height="40" rx="25" fill="transparent"/>
+
+        <!-- Aquí se cargará /face/walter-eyes.svg -->
+        <g id="faceSlot"></g>
+        <!--
+        <rect
+          id="nose"
+          x="455"
+          y="565"
+          width="80"
+          height="35"
+          rx="30"
+          fill="#000000"
+        />  -->
+
+      </svg>
+    </div>
+
+    <div id="panelVoz">
+      <h2>Configuración de voz</h2>
+
+      <p id="msg"></p>
+
+      <input type="text" name="speech-msg" id="speech-msg" x-webkit-speech/>
+
+      <label for="voice">Voz</label>
+      <select name="voice" id="voice"></select>
+
+      <button id="configSpeak">Setear configuración</button>
+      <button id="speak">Speak</button>
+
+      <label for="volume">Volumen</label>
+      <input type="range" min="0" max="1" step="0.1" name="volume" id="volume" value="1"/>
+
+      <label for="rate">Rate</label>
+      <input type="range" min="0.1" max="10" step="0.1" name="rate" id="rate" value="0.8"/>
+
+      <label for="pitch">Pitch</label>
+      <input type="range" min="0" max="2" name="pitch" id="pitch" value="1.5"/>
+    </div>
+
+  </div>
+
+  <script src="http://localhost:3001/socket.io/socket.io.js"></script>
+
+  <script>
+    async function loadSvgGroups(svgPath, targetSlotId, groupIds) {
+      const response = await fetch(svgPath, { cache: "no-cache" });
+
+      if (!response.ok) {
+        throw new Error("No se pudo cargar: " + svgPath);
+      }
+
+      const svgText = await response.text();
+
+      const parser = new DOMParser();
+      const svgDocument = parser.parseFromString(svgText, "image/svg+xml");
+
+      const targetSlot = document.getElementById(targetSlotId);
+
+      if (!targetSlot) {
+        throw new Error("No existe el contenedor: " + targetSlotId);
+      }
+
+      targetSlot.innerHTML = "";
+
+      // Importar también <defs>. Sin esto, los clipPath del SVG quedan fuera
+      // cuando solo se copia walterVector y las pupilas pueden renderizarse mal.
+      const sourceDefs = svgDocument.querySelector("svg > defs");
+
+      if (sourceDefs) {
+        const importedDefs = document.importNode(sourceDefs, true);
+        targetSlot.appendChild(importedDefs);
+      }
+
+      groupIds.forEach((groupId) => {
+        const group = svgDocument.getElementById(groupId);
+
+        if (!group) {
+          console.warn("No se encontró el ID:", groupId, "en", svgPath);
+          return;
+        }
+
+        const importedGroup = document.importNode(group, true);
+        targetSlot.appendChild(importedGroup);
+      });
+    }
+
+    function loadScript(src) {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = src;
+        script.onload = resolve;
+        script.onerror = () => reject(new Error("No se pudo cargar script: " + src));
+        document.body.appendChild(script);
+      });
+    }
+
+    async function loadWalterFace() {
+      await loadSvgGroups("/face/walter-face.svg", "faceSlot", ["walterVector"]);
+    }
+
+    function initWalterSocketAndExpressions() {
+      const socket = io();
+
+      const browL = document.getElementById("browL");
+      const browR = document.getElementById("browR");
+
+      const eyeL = document.getElementById("eyeL");
+      const eyeR = document.getElementById("eyeR");
+
+      const mouthClosed = document.getElementById("mouthClosed");
+      const mouthOpen = document.getElementById("mouthOpen");
+
+      socket.on("updateExpression", (data) => {
+        let exprName = data;
+        let intensity = 1.0;
+
+        if (typeof data === "object" && data !== null) {
+          exprName = data.name || exprName;
+          intensity = typeof data.intensity === "number"
+            ? Math.max(0, Math.min(1, data.intensity))
+            : intensity;
+        }
+
+        applyExpression(exprName, intensity);
+      });
+
+      socket.on("updateHabla", (data) => {
+        console.log("updateHabla:", data);
+
+        if (typeof speak === "function") {
+          speak(data);
+        } else {
+          console.warn("La función speak() todavía no está disponible.");
+        }
+      });
+
+      function setClosedMouth(d) {
+        if (!mouthClosed || !mouthOpen) {
+          console.warn("No se encontró mouthClosed o mouthOpen.");
+          return;
+        }
+
+        mouthOpen.style.display = "none";
+        mouthClosed.style.display = "block";
+        mouthClosed.setAttribute("d", d);
+      }
+
+      function applyExpression(name, i = 1) {
+        resetFace();
+
+        switch ((name || "").toLowerCase()) {
+          case "neutral":
+            setClosedMouth("M380 615 Q500 665 620 615");
+            break;
+
+          case "smile":
+            setClosedMouth(`M320 660 Q500 ${900 - 180 * i} 680 660`);
+            break;
+
+          case "bigsmile":
+            setClosedMouth(`M320 660 Q500 ${900 - 100 * i} 680 660`);
+            break;
+
+          case "frown":
+            setClosedMouth(`M320 700 Q500 ${660 + 40 * i} 680 700`);
+            break;
+
+          case "surprise":
+            setClosedMouth("M470 650 Q500 750 530 650");
+            break;
+
+          case "angry":
+            browAngry(i);
+            setClosedMouth(`M320 700 Q500 ${660 + 40 * i} 680 700`);
+            break;
+
+          case "sad":
+            browSad(i);
+            setClosedMouth(`M340 700 Q500 ${900 - 350 * i} 660 700`);
+            break;
+
+          case "look-down":
+            lookDown(i);
+            break;
+
+          default:
+            setClosedMouth("M380 615 Q500 665 620 615");
+            break;
+        }
+      }
+
+      function resetFace() {
+        if (browL) {
+          browL.style.transform = "translate(0,0) rotate(0deg)";
+        }
+
+        if (browR) {
+          browR.style.transform = "translate(0,0) rotate(0deg)";
+        }
+
+        if (eyeL) {
+          eyeL.setAttribute("transform", "translate(300 450)");
+        }
+
+        if (eyeR) {
+          eyeR.setAttribute("transform", "translate(700 450)");
+        }
+      }
+
+      function browAngry(i = 1) {
+        if (browL) {
+          browL.style.transform = `translate(0,${50 * i}px) rotate(10deg)`;
+        }
+
+        if (browR) {
+          browR.style.transform = `translate(0,${50 * i}px) rotate(-10deg)`;
+        }
+      }
+
+      function browSad(i = 1) {
+        if (browL) {
+          browL.style.transform = `translate(0,${-30 * i}px) rotate(-15deg)`;
+        }
+
+        if (browR) {
+          browR.style.transform = `translate(0,${-30 * i}px) rotate(15deg)`;
+        }
+      }
+
+      function lookDown(i = 1) {
+        if (eyeL) {
+          eyeL.setAttribute("transform", "translate(350 500)");
+        }
+
+        if (eyeR) {
+          eyeR.setAttribute("transform", "translate(650 500)");
+        }
+      }
+    }
+
+    async function startWalterDisplay() {
+      try {
+        await loadWalterFace();
+
+        console.log("SVG de ojos y boca cargados correctamente.");
+
+        await loadScript("/js/speechojos.js");
+        await loadScript("/js/speechboca.js");
+        await loadScript("/js/speechv2.js");
+
+            // MediaPipe para cámara
+        await loadScript("https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js");
+        await loadScript("https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/face_detection.js");
+
+        // Seguimiento de pupilas
+        await loadScript("/js/waltercamera.js");
+
+
+        
+        await loadScript("https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js");
+
+
+        // Reconocimiento de sonrisa del rostro activo
+        await loadScript("/js/walteremotionv2.js");
+
+        await loadScript("/js/waltercabeza.js");
+        
+
+        //initWalterSocketAndExpressions();
+
+        console.log("Display Walter inicializado correctamente.");
+      } catch (error) {
+        console.error("Error inicializando Walter:", error);
+      }
+    }
+
+    startWalterDisplay();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Display</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      /*background: #0a0f1a; /* Fondo oscuro futurista */
+      background: #FFFFFF,; /* Fondo oscuro futurista */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    svg {
+      width: 100%vw;
+      height: 10%vh;
+    }
+    svg * {
+      transform-origin: center;
+      transition: transform 250ms ease, opacity 250ms ease, d 250ms ease;
+    }
+    .pupil { transition: transform 180ms cubic-bezier(.2,.9,.2,1); }
+    .brow { transition: transform 200ms cubic-bezier(.2,.9,.2,1); }
+    .eye { transition: transform 200ms cubic-bezier(.2,.9,.2,1); }
+    
+  </style>
+</head>
+<body>
+
+  <div id='container'>
+
+<div id='rostro'>
+
+  <svg viewBox="0 0 1000 850" preserveAspectRatio="xMidYMid meet">
+
+    <!-- Cabeza de robot -->
+    <!--<ellipse cx="500" cy="500" rx="450" ry="480" fill="#1c2233" stroke="#00b4ff" stroke-width="15"/>-->
+    
+    <!-- Cejas tipo LED 
+    <rect id="browL" class="brow" x="180" y="250" width="160" height="40" rx="25" fill="#0000000"/>
+    <rect id="browR" class="brow" x="660" y="250" width="160" height="40" rx="25" fill="#0000000"/>
+    
+
+ 
+    <!-- Ojo izquierdo --> 
+    <g id="leftEye" class="eye" transform="translate(300,450)">
+      <g transform="translate(0,0)">
+        <!--circle cx="0" cy="0" r="90" fill="#0a0f1a" stroke="#00b4ff" stroke-width="10"/-->
+        <ellipse id="pupilL" class="pupil" cx="0" cy="0" rx="110" ry="120" fill="#000000"/>
+        <circle cx="60" cy="-50" r="25" fill="#fff" opacity="1"/> <!-- brillo -->
+        
+        
+<!-- Boca sonrisa LED -->
+        
+         <circle cx="-0" cy="190" r="25" fill="#00000" opacity="1"/> <!-- brillo -->
+         
+         <circle cx="80" cy="225" r="25" fill="#00000" opacity="1"/> <!-- brillo -->
+         
+         <circle cx="160" cy="245" r="25" fill="#00000" opacity="1"/> <!-- brillo -->
+         
+         
+         <circle cx="250" cy="245" r="25" fill="#00000" opacity="1"/> <!-- brillo -->
+         
+         <circle cx="330" cy="220" r="25" fill="#00000" opacity="1"/> <!-- brillo -->
+         
+         <circle cx="410" cy="190" r="25" fill="#00000" opacity="1"/> <!-- brillo -->
+         -->
+            
+      </g>
+    </g>
+
+    <!-- Ojo derecho -->
+    <g id="rightEye" class="eye" transform="translate(700,450)">
+      <!--circle cx="0" cy="0" r="90" fill="#0a0f1a" stroke="#00b4ff" stroke-width="10"/-->
+      <ellipse id="pupilR" class="pupil" cx="0" cy="0" rx="110" ry="120" fill="#000000"/>
+      <circle cx="60" cy="-50" r="25" fill="#fff" opacity="1"/>
+    </g>
+    
+    <!-- nariz tipo LED  -->
+    <rect id="browL" class="brow" x="455" y="550" width="70" height="55" rx="30" fill="#F57420"/>
+   
+    
+     <!--<polygon points="505, 560 455,585 505,610" fill="#F57939"/> -->
+    
+    
+     <!-- mejillas rosas -->
+    <rect id="browL" class="brow" x="760" y="565" width="80" height="45" rx="30" opacity="5" fill="#F59E8E"/>
+    <rect id="browL" class="brow" x="160" y="565" width="80" height="45" rx="30" opacity="5" fill="#F59E8E"/>
+    
+    
+    <
+    !-- rect id="browL" class="brow" x="450" y="550" width="80" height="30" rx="25" fill="#361E07"/-->
+    
+  
+   
+   
+    <!-- Boca pantalla LED -->
+         <!--< <path id="mouth" d="M320 680 Q500 750 680 680" stroke="#000000" stroke-width="40" fill="none" stroke-linecap="round"/>
+    
+    
+
+    <!-- Luces decorativas (sensores) -->
+    <!--circle cx="120" cy="500" r="25" fill="#00eaff"/-->
+    <!--circle cx="500" cy="500" r="25" fill="#00eaff"/-->
+    <!--circle cx="880" cy="500" r="25" fill="#00eaff"/-->
+
+  </svg>
+</div>
+
+
+    <div >
+      <h2>Configuración de voz</h2>
+      
+      <p id="msg"></p>
+       <input type="text" name="speech-msg" id="speech-msg" x-webkit-speech>
+
+        <label for="voice">Voz</label>
+        <select name="voice" id="voice"></select>
+      <button id="configSpeak">Setear configuración</button>
+       <button id="speak">Speak</button>
+        <label for="volume">Volumen</label>
+        <input type="range" min="0" max="1" step="0.1" name="volume" id="volume" value="1">
+        <label for="rate">Rate</label>
+        <input type="range" min="0.1" max="10" step="0.1" name="rate" id="rate" value="0.8">
+        <label for="pitch">Pitch</label>
+        <input type="range" min="0" max="2" step="0.1" name="pitch" id="pitch" value="1.5">
+    </div>
+      
+
+  </div>
+
+
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+
+    const mouth = document.getElementById('mouth');
+    const pupilL = document.getElementById('pupilL');
+    const pupilR = document.getElementById('pupilR');
+    const browL = document.getElementById('browL');
+    const browR = document.getElementById('browR');
+    const leftEye = document.getElementById('leftEye');
+
+
+
+    socket.on('updateExpression', (data) => {
+      let exprName = data;
+      let intensity = 1.0;
+      if (typeof data === 'object' && data !== null) {
+        exprName = data.name || exprName;
+        intensity = typeof data.intensity === 'number' ? Math.max(0, Math.min(1, data.intensity)) : intensity;
+      }
+      applyExpression(exprName, intensity);
+    });
+
+
+    socket.on('updateHabla', (data) => {
+      console.log('updateHabla: ', data);
+      let texto = data;
+
+      speak(texto);
+    });
+
+    function applyExpression(name, i=1){
+      resetFace();
+      switch((name || '').toLowerCase()){
+        case 'neutral': resetFace(); mouth.setAttribute('d','M320 680 Q500 700 680 680'); break;
+ 
+        //case 'smile': mouth.setAttribute('d',`M320 670 Q500 ${740-40*i} 680 670`); break;
+        
+        
+        
+        case 'smile': mouth.setAttribute('d',`M320 660 Q500 ${900-180*i} 680 660`); break;
+        
+        
+        case 'bigsmile': mouth.setAttribute('d',`M320 660 Q500 ${900-100*i} 680 660`); break;
+        
+        
+        case 'frown': mouth.setAttribute('d',`M320 700 Q500 ${660+40*i} 680 700`); break;
+        case 'surprise': mouth.setAttribute('d','M470 650 Q500 750 530 650'); break;
+        case 'angry': 
+          browAngry(i); 
+          mouth.setAttribute('d',`M320 700 Q500 ${660+40*i} 680 700`); 
+          break;
+        case 'sad': browSad(i); mouth.setAttribute('d',`M340 700 Q500 ${900-350*i} 660 700`); break;
+        case 'look-down': lookDown(i);  break;
+      }
+    }
+
+    function resetFace(){
+      browL.style.transform = browR.style.transform = 'translate(0,0) rotate(0deg)';
+      leftEye.style.transform = `translate(300px,450px)`;
+      rightEye.style.transform = `translate(700px,450px)`;
+    }
+    function browAngry(i=1){ 
+      browL.style.transform = `translate(0,${50*i}px) rotate(10deg)`; 
+      browR.style.transform = `translate(0,${50*i}px) rotate(-10deg)`; 
+
+    }
+    function browSad(i=1){ 
+      browL.style.transform = `translate(0,${-30*i}px) rotate(-15deg)`; 
+      browR.style.transform = `translate(0,${-30*i}px) rotate(15deg)`; 
+    }
+    function lookDown(i=1){ 
+     // leftEye.style.transform = `translate(50,${100*i}px) `; 
+      leftEye.style.transform = `translate(350px,500px) `; 
+      rightEye.style.transform = `translate(650px,500px) `; 
+    }
+  
+  
+  
+  
+  
+  </script>
+
+   <script src='js/speech.js'></script>
+</body>
+</html>
+

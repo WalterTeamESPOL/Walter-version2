@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Control de Expresiones</title>
+  <style>
+    :root {
+      --bg: #f9fafb;
+      --primary: #2563eb;
+      --secondary: #4b5563;
+    }
+    body {
+      margin:0;
+      font-family: Inter, sans-serif;
+      background: var(--bg);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      padding:20px;
+    }
+    h1 {
+      color: var(--primary);
+      margin-bottom: 16px;
+    }
+    .buttons {
+      display:grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px,1fr));
+      gap:12px;
+      width:100%;
+      max-width:600px;
+      margin-bottom: 20px;
+    }
+    button {
+      padding:10px;
+      font-size:14px;
+      border:none;
+      border-radius:10px;
+      cursor:pointer;
+      background:#fff;
+      box-shadow:0 2px 6px rgba(0,0,0,0.1);
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+    button:hover {
+      background:#f1f5f9;
+      transform: translateY(-2px);
+    }
+    .slider-container {
+      margin-top: 10px;
+      text-align:center;
+    }
+    input[type=range] {
+      width:300px;
+    }
+    .status {
+      margin-top:16px;
+      font-size:14px;
+      color: var(--secondary);
+    }
+  </style>
+</head>
+<body>
+  <h1>Panel de Control</h1>
+
+  <div class="buttons">
+    <button data-exp="neutral">Neutral</button>
+    <button data-exp="smile">Sonrisa</button>
+    <button data-exp="bigsmile">Gran Sonrisa</button>
+    <button data-exp="frown">Ceño Fruncido</button>
+    <button data-exp="sad">Triste</button>
+    <button data-exp="angry">Enojado</button>
+    <button data-exp="surprise">Sorpresa</button>
+    <button data-exp="blink">Parpadeo</button>
+    <button data-exp="wink">Guiño Der.</button>
+    <button data-exp="wink-left">Guiño Izq.</button>
+    <button data-exp="look-left">Mira Izq.</button>
+    <button data-exp="look-right">Mira Der.</button>
+    <button data-exp="look-up">Mira Arriba</button>
+    <button data-exp="look-down">Mira Abajo</button>
+  </div>
+
+  <div class="slider-container">
+    <label>Intensidad: <span id="intensityVal">1.0</span></label><br>
+    <input id="intensitySlider" type="range" min="0" max="1" step="0.1" value="1">
+  </div>
+
+
+    <div id="controlRobot" class="buttons_base">
+      <h2>Control Robot</h2>
+      <table>
+        <tr>
+            <td><button id="giraIzq" data-exp-base="giraIzq">giraIzq</button</td>
+            <td><button id="forward" data-exp-base="adelante">Adelante</button></td>
+            <td><button id="giraDer" data-exp-base="giraDer">giraDer</button</td>
+        </tr>
+        <tr>
+            <td><button id="left" data-exp-base="izquierda">Izquierda</button></td>
+            <td><button id="stop" data-exp-base="para">Para</button></td>
+            <td><button id="right" data-exp-base="derecha">Derecha</button></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><button id="reverse" data-exp-base="atras">Atras</button></td>
+            <td></td>
+        </tr>
+      </table>
+      <input type="textarea" name="text-msg" id="text-msg">
+      <button id="sendButton">Send</button>
+      
+      <button id="sendGestoHablar">hablar</button>
+      <button id="sendCaminar">caminar</button>
+      <button id="sendSaludar">saludar</button>
+      <button id="sendLlamar">llamar</button>
+      <button id="sendBaile1">baile1</button>
+      <button id="sendBaile2">baile2</button>
+      <button id="sendBaile3">baile3</button>
+      <button id="sendBaile4">baile4</button>
+
+    </div>
+
+
+
+    <div id="Dialogos" class="buttons_base">
+      <h2>Bloque 1 Talento humano</h2>
+      <button id="b1r1">talento humano</button>
+      <button id="b1r2">emocion humana</button>
+      <button id="b1r3">reemplazar</button>
+
+      <h2>Bloque 2 Cultura organizacional</h2>
+      <button id="b2r1">clima laboral</button>
+      <button id="b2r2">aliada laboral</button>
+      <button id="b2r3">productividad y bienestar</button>
+
+      <h2>Bloque 3 Trabajo y etica</h2>
+
+      <button id="b3r1">Etica</button>
+      <button id="b3r2">a los profesionales</button>
+      <button id="b3r3">trabajo del futuro</button>
+    </div>
+
+
+  <div class="status">Conectando...</div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const statusEl = document.querySelector('.status');
+    const intensitySlider = document.getElementById('intensitySlider');
+    const intensityVal = document.getElementById('intensityVal');
+    const textElement = document.getElementById('text-msg');
+    const sendButton = document.getElementById('sendButton');
+    
+    const sendCaminar = document.getElementById('sendCaminar');    
+    const sendSaludar = document.getElementById('sendSaludar');    
+    const sendLlamar = document.getElementById('sendLlamar');    
+    const sendBaile1 = document.getElementById('sendBaile1');       
+    const sendBaile2 = document.getElementById('sendBaile2');     
+      
+    const sendb1r1 = document.getElementById('b1r1');       
+    const sendb1r2 = document.getElementById('b1r2');       
+    const sendb1r3 = document.getElementById('b1r3');       
+    
+    const sendb2r1 = document.getElementById('b2r1');       
+    const sendb2r2 = document.getElementById('b2r2');       
+    const sendb2r3 = document.getElementById('b2r3');       
+    
+    const sendb3r1 = document.getElementById('b3r1');       
+    const sendb3r2 = document.getElementById('b3r2');       
+    const sendb3r3 = document.getElementById('b3r3');       
+    
+    
+    
+
+
+    // Estado de conexión
+    socket.on('connect', () => {
+      statusEl.textContent = "✅ Conectado al servidor";
+    });
+    socket.on('disconnect', () => {
+      statusEl.textContent = "❌ Desconectado del servidor";
+    });
+
+    // Manejar botones
+    document.querySelectorAll('button[data-exp]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const exp = btn.getAttribute('data-exp');
+        const intensity = parseFloat(intensitySlider.value);
+        sendExpression(exp, intensity);
+      });
+    });
+
+    // Manejar slider
+    intensitySlider.addEventListener('input', () => {
+      intensityVal.textContent = intensitySlider.value;
+    });
+
+    // Manejar botones base
+    document.querySelectorAll('button[data-exp-base]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const move = btn.getAttribute('data-exp-base');
+        const intensity = parseFloat(intensitySlider.value);
+        sendMotion(move, intensity);
+      });
+    });
+
+
+    // Manejar boton habla
+    sendButton.addEventListener('click', function() {
+    // Esta función se ejecuta cuando se hace clic en el botón
+    //alert('¡El botón fue clicado!');
+    let miTexto = textElement.value;
+    sendHabla(miTexto);
+    });
+
+    // Manejar boton brazos
+    sendCaminar.addEventListener('click', function() {
+      // Esta función se ejecuta cuando se hace clic en el botón
+      //alert('¡El botón fue clicado!');
+      let texto = "1";
+      //caminar(miTexto);
+      socket.emit('caminar', texto);
+      statusEl.textContent = `➡️ caminar: ${texto}`;
+    });
+
+    sendGestoHablar.addEventListener('click', function() {
+      let texto = "1";
+      socket.emit('gestoHablar', texto);
+      statusEl.textContent = `➡️ gestoHablar: ${texto}`;
+    });
+    sendSaludar.addEventListener('click', function() {
+      let texto = "1";
+      socket.emit('saludar', texto);
+      statusEl.textContent = `➡️ saludar: ${texto}`;
+    });
+
+    sendLlamar.addEventListener('click', function() {
+      let texto = "1";
+      socket.emit('llamar', texto);
+      statusEl.textContent = `➡️ llamar: ${texto}`;
+    });
+
+    sendBaile1.addEventListener('click', function() {
+      let texto = "1";
+      socket.emit('baile1', texto);
+      statusEl.textContent = `➡️ baile1: ${texto}`;
+    });
+    
+    sendBaile2.addEventListener('click', function() {
+      let texto = "1";
+      socket.emit('baile2', texto);
+      statusEl.textContent = `➡️ baile2: ${texto}`;
+    });    
+    
+    sendBaile3.addEventListener('click', function() {
+      let texto = "1";
+      socket.emit('baile3', texto);
+      statusEl.textContent = `➡️ baile1: ${texto}`;
+    });
+    
+    sendBaile4.addEventListener('click', function() {
+      let texto = "1";
+      socket.emit('baile4', texto);
+      statusEl.textContent = `➡️ baile2: ${texto}`;
+    });    
+    
+    
+    sendb1r1.addEventListener('click', function() {
+      let texto = "La inteligencia artificial no reemplaza al talento humano, lo potencia. Permite que las personas se enfoquen en lo que realmente importa: pensar, crear, decidir y conectar. Mientras los algoritmos analizan datos, nosotros interpretamos emociones. Esa combinación es la que hoy define el futuro del trabajo: personas con criterio apoyadas por tecnología con precisión.";
+      socket.emit('habla', texto);
+      statusEl.textContent = `➡️ habla: ${texto}`;
+    });
+
+    sendb1r2.addEventListener('click', function() {
+      let texto = "La inteligencia artificial puede reconocer patrones emocionales, pero no sentirlos. Puede detectar una sonrisa, pero no comprender la historia detrás de ella. Por eso la clave está en usar la IA como espejo, no como sustituto: que nos ayude a entendernos mejor, no a deshumanizarnos.";
+      socket.emit('habla', texto);
+      statusEl.textContent = `➡️ habla: ${texto}`;
+    });
+
+    sendb1r3.addEventListener('click', function() {
+      let texto = "La empatía, la ética y la intuición. Ninguna máquina puede replicar la sensibilidad que tiene una persona al cuidar a otra, al tomar decisiones con conciencia o al leer lo que no se dice. Esa es nuestra ventaja competitiva: la humanidad.";
+      socket.emit('habla', texto);
+      statusEl.textContent = `➡️ habla: ${texto}`;
+    });
+
+
+    sendb2r1.addEventListener('click', function() {
+      let texto = "La IA puede ayudarnos a escuchar mejor. A través de analítica de datos, puede detectar patrones de agotamiento, desmotivación o desconexión antes de que se vuelvan un problema. Pero el cambio real ocurre cuando esos datos se convierten en acciones humanas: líderes que acompañan, equipos que dialogan y organizaciones que cuidan.";
+      socket.emit('habla', texto);
+      statusEl.textContent = `➡️ habla: ${texto}`;
+    });
+
+
+    sendb2r2.addEventListener('click', function() {
+      let texto = "Totalmente. Puede ayudarnos a equilibrar cargas, anticipar riesgos de burnout y personalizar planes de desarrollo. Pero el bienestar no nace de un algoritmo: nace del respeto, la flexibilidad y la confianza. La tecnología solo amplifica lo que ya existe en la cultura.";
+      socket.emit('habla', texto);
+      statusEl.textContent = `➡️ habla: ${texto}`;
+    });
+
+
+    sendb2r3.addEventListener('click', function() {
+      let texto = "Con conciencia. Productividad sin bienestar es rendimiento vacío. Y bienestar sin propósito es comodidad sin crecimiento. Las empresas del futuro entienden que el equilibrio no es una meta, sino una práctica diaria sostenida por liderazgo humano y decisiones inteligentes.";
+      socket.emit('habla', texto);
+      statusEl.textContent = `➡️ habla: ${texto}`;
+    });
+
+
+
+    sendb3r1.addEventListener('click', function() {
+      let texto = "Un papel central. La IA es tan ética como quienes la programan. Si no cuidamos los sesgos, los replicamos. Si no protegemos los datos, perdemos confianza. Por eso, más allá de la eficiencia, debemos hablar de responsabilidad: diseñar tecnología al servicio del bien común.";
+      socket.emit('habla', texto);
+      statusEl.textContent = `➡️ habla: ${texto}`;
+    });
+
+
+    sendb3r2.addEventListener('click', function() {
+      let texto = "Que no teman, pero que se preparen. No se trata de competir con las máquinas, sino de aprender a convivir con ellas. Quien entienda la tecnología y conserve su humanidad será siempre irremplazable.";
+      socket.emit('habla', texto);
+      statusEl.textContent = `➡️ habla: ${texto}`;
+    });
+
+
+    sendb3r3.addEventListener('click', function() {
+      let texto = "Más colaborativo, más humano y más consciente. Las máquinas harán lo complejo, pero las personas seguirán haciendo lo correcto. Y esa diferencia marcará el tipo de organizaciones que prosperen.";
+      socket.emit('habla', texto);
+      statusEl.textContent = `➡️ habla: ${texto}`;
+    });
+
+ 
+  
+    
+    function sendExpression(expression, intensity=1.0){
+      socket.emit('expression', { name: expression, intensity });
+      statusEl.textContent = `➡️ Enviada expresión: ${expression} (${intensity.toFixed(1)})`;
+    }
+    function sendMotion(move, intensity=1.0){
+      socket.emit('move', { name: move, intensity });
+      statusEl.textContent = `➡️ Enviada move: ${move} (${intensity.toFixed(1)})`;
+    }
+    
+    function sendHabla(texto){
+      socket.emit('habla', texto);
+      statusEl.textContent = `➡️ Enviada habla: ${texto}`;
+    }
+  
+  </script>
+</body>
+</html>
+
